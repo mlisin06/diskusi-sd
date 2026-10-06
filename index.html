@@ -106,27 +106,17 @@
             <div class="form-soal">
                 <b>📝 Input / Ubah Materi Pembelajaran:</b>
                 <input type="text" id="input-materi-title" placeholder="Judul Topik (Contoh: IPAS - Fotosintesis)">
-                <textarea id="input-materi-body" placeholder="Tuliskan isi ringkasan materi pembelajaran di sini..."></textarea>
+                <textarea id="input-materi-body" placeholder="Tuliskan isi ringkasan materi pembelajaran di sini (bisa sampai 2000+ karakter)..."></textarea>
                 <button onclick="saveMateri()" style="background:#0288d1;">💾 Simpan Materi Ke Siswa</button>
             </div>
 
-            <!-- Form Tambah Soal -->
-            <div class="form-soal">
-                <b>❓ Tambah Soal Kuis Baru:</b>
-                <input type="text" id="input-q" placeholder="Pertanyaan Soal...">
-                <input type="text" id="input-opt0" placeholder="Pilihan A">
-                <input type="text" id="input-opt1" placeholder="Pilihan B">
-                <input type="text" id="input-opt2" placeholder="Pilihan C">
-                <input type="text" id="input-opt3" placeholder="Pilihan D">
-                <label>Kunci Jawaban Benar:</label>
-                <select id="input-correct">
-                    <option value="0">Pilihan A</option>
-                    <option value="1">Pilihan B</option>
-                    <option value="2">Pilihan C</option>
-                    <option value="3">Pilihan D</option>
-                </select>
-                <button onclick="addQuestion()" style="background:#2e7d32;">➕ Tambah Soal ke Kuis</button>
-                <button onclick="resetQuestions()" style="background:#d32f2f;">🗑️ Hapus Semua Soal Kuis</button>
+            <!-- Form Impor Soal Massal (JSON AI) -->
+            <div class="form-soal" style="background:#e8eaf6; border-color:#c5cae9;">
+                <b>🤖 Impor Soal AI Massal (Paste Hasil JSON):</b>
+                <p style="font-size:11px; color:#3f51b5; margin:3px 0 8px;">Copy materi Anda ke Gemini/ChatGPT, minta buatkan soal JSON, lalu tempel kodenya di bawah ini:</p>
+                <textarea id="input-json-soal" placeholder='Tempel teks format JSON buatan AI di sini, misal: [{"q":"Soal...","options":["A","B","C","D"],"answer":0}]' style="min-height:110px; font-family:monospace; font-size:11px;"></textarea>
+                <button onclick="importJSONSoal()" style="background:#3f51b5;">🚀 Impor & Terbitkan Soal Massal</button>
+                <button onclick="resetQuestions()" style="background:#d32f2f;">🗑️️ Hapus Semua Soal Kuis Saat Ini</button>
             </div>
 
             <h4 style="color:#7b1fa2; margin-top:20px;">📊 Rekap Nilai Siswa</h4>
@@ -144,7 +134,7 @@
                 </tbody>
             </table>
             <button onclick="resetChats()" style="background:#ab47bc; margin-top:15px;">🗑️ Hapus Semua Chat Diskusi</button>
-            <button onclick="resetScores()" style="background:#e53935;">🗑️️ Reset Data Nilai</button>
+            <button onclick="resetScores()" style="background:#e53935;">🗑️ Reset Data Nilai</button>
         </div>
     </div>
 
@@ -194,7 +184,7 @@
             document.getElementById('materi-box').classList.toggle('hidden');
         }
 
-        // --- MANAJEMEN MATERI (DINAMIS) ---
+        // --- MANAJEMEN MATERI ---
         function saveMateri() {
             const title = document.getElementById('input-materi-title').value.trim();
             const body = document.getElementById('input-materi-body').value.trim();
@@ -218,33 +208,34 @@
             });
         }
 
-        // --- MANAJEMEN SOAL KUIS (DINAMIS) ---
-        function addQuestion() {
-            const q = document.getElementById('input-q').value.trim();
-            const opt0 = document.getElementById('input-opt0').value.trim();
-            const opt1 = document.getElementById('input-opt1').value.trim();
-            const opt2 = document.getElementById('input-opt2').value.trim();
-            const opt3 = document.getElementById('input-opt3').value.trim();
-            const correct = parseInt(document.getElementById('input-correct').value);
+        // --- MANAJEMEN IMPOR SOAL JSON ---
+        function importJSONSoal() {
+            const rawJson = document.getElementById('input-json-soal').value.trim();
+            if(!rawJson) return alert("Tempelkan data teks JSON hasil buatan AI terlebih dahulu!");
 
-            if(!q || !opt0 || !opt1 || !opt2 || !opt3) return alert("Lengkapi semua teks pertanyaan dan pilihan A-D!");
+            try {
+                // Bersihkan karakter markdown pembalut kode (seperti ```json ... ```) jika terbawa saat copy
+                const cleanJson = rawJson.replace(/```json/g, '').replace(/```/g, '').trim();
+                const parsedData = JSON.parse(cleanJson);
 
-            db.ref('questions').push({
-                q: q,
-                options: [opt0, opt1, opt2, opt3],
-                answer: correct
-            }).then(() => {
-                alert("Soal berhasil ditambahkan!");
-                document.getElementById('input-q').value = '';
-                document.getElementById('input-opt0').value = '';
-                document.getElementById('input-opt1').value = '';
-                document.getElementById('input-opt2').value = '';
-                document.getElementById('input-opt3').value = '';
-            });
+                if(!Array.isArray(parsedData)) {
+                    return alert("Format JSON harus berupa Array / Daftar Soal [...]!");
+                }
+
+                if(confirm(`Yakin ingin mengimpor ${parsedData.length} soal baru ini ke dalam kuis?`)) {
+                    // Timpa data soal di database Firebase
+                    db.ref('questions').set(parsedData).then(() => {
+                        alert(`Berhasil mengimpor ${parsedData.length} soal ke dalam aplikasi!`);
+                        document.getElementById('input-json-soal').value = '';
+                    });
+                }
+            } catch(e) {
+                alert("Format JSON tidak valid! Pastikan Anda menyalin seluruh output kode JSON dari AI tanpa terpotong.");
+            }
         }
 
         function resetQuestions() {
-            if(confirm("Hapus semua daftar soal kuis?")) {
+            if(confirm("Hapus semua daftar soal kuis saat ini?")) {
                 db.ref('questions').remove();
             }
         }
@@ -253,9 +244,14 @@
             db.ref('questions').on('value', snapshot => {
                 quizData = [];
                 if(snapshot.exists()) {
-                    snapshot.forEach(child => {
-                        quizData.push(child.val());
-                    });
+                    const val = snapshot.val();
+                    if(Array.isArray(val)) {
+                        quizData = val;
+                    } else {
+                        snapshot.forEach(child => {
+                            quizData.push(child.val());
+                        });
+                    }
                 }
                 currentQuestionIndex = 0;
                 score = 0;
