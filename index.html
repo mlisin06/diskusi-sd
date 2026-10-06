@@ -8,7 +8,7 @@
         * { box-sizing: border-box; font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif; }
         body { background-color: #e0f7fa; margin: 0; padding: 15px; }
         .card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        h2, h3 { color: #0277bd; text-align: center; margin-top: 0; }
+        h2, h3, h4 { color: #0277bd; text-align: center; margin-top: 0; }
         button { background-color: #ff9800; color: white; border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px; margin: 5px 0; width: 100%; }
         button:hover { background-color: #f57c00; }
         input, select { width: 100%; padding: 10px; margin: 5px 0 10px; border: 2px solid #81d4fa; border-radius: 10px; font-size: 14px; }
@@ -18,13 +18,17 @@
         .msg { background: white; padding: 6px 10px; border-radius: 10px; margin-bottom: 5px; font-size: 13px; border-left: 4px solid #4caf50; }
         .msg-sender { font-weight: bold; color: #2e7d32; font-size: 11px; }
 
-        /* Board Drag Drop */
-        .drag-container { display: flex; gap: 10px; justify-content: space-around; margin-top: 10px; }
-        .drop-zone { width: 48%; min-height: 80px; border: 2px dashed #0288d1; border-radius: 10px; padding: 5px; background: #e1f5fe; }
-        .draggable { background: #ffeb3b; padding: 8px; margin: 5px; border-radius: 8px; text-align: center; font-weight: bold; cursor: grab; font-size: 12px; }
+        /* Game / Quiz Styling */
+        .quiz-option { display: block; background: #e3f2fd; padding: 10px; margin: 5px 0; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; color: #0d47a1; border: 1px solid #90caf9; }
+        .quiz-option:hover { background: #bbdefb; }
+
+        /* Tabel Rekap Nilai */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        th, td { border: 1px solid #ce93d8; padding: 8px; text-align: center; }
+        th { background-color: #ba68c8; color: white; }
 
         .hidden { display: none; }
-        .badge { background: #4caf50; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; }
+        .badge { background: #4caf50; color: white; padding: 4px 10px; border-radius: 10px; font-size: 12px; }
     </style>
     <!-- Firebase SDK (v8 CDN) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -37,15 +41,20 @@
         <h2>🕵️ Detektif Cilik SD</h2>
         <label>Nama Siswa / Guru:</label>
         <input type="text" id="username" placeholder="Masukkan namamu...">
+        
         <label>Masuk Sebagai:</label>
         <select id="role">
             <option value="siswa">Siswa (Detektif)</option>
             <option value="guru">Guru (Ketua Detektif)</option>
         </select>
+
         <label>Pilih Kelompok:</label>
         <select id="group">
-            <option value="kelompok1">Kelompok 1 (Garuda)</option>
-            <option value="kelompok2">Kelompok 2 (Rajawali)</option>
+            <option value="Kelompok 1 (Garuda)">Kelompok 1 (Garuda)</option>
+            <option value="Kelompok 2 (Rajawali)">Kelompok 2 (Rajawali)</option>
+            <option value="Kelompok 3 (Elang)">Kelompok 3 (Elang)</option>
+            <option value="Kelompok 4 (Merpati)">Kelompok 4 (Merpati)</option>
+            <option value="Kelompok 5 (Cendrawasih)">Kelompok 5 (Cendrawasih)</option>
         </select>
         <button onclick="login()">🚀 Masuk Ruang Diskusi</button>
     </div>
@@ -57,45 +66,69 @@
             <button onclick="location.reload()" style="width:auto; padding:5px 10px; background:#e53935;">Keluar</button>
         </div>
 
-        <h3>🔍 Misi IPAS: Tumbuhan Hijau</h3>
+        <h3>🔍 Misi IPAS: Fotosintesis Tumbuhan</h3>
 
-        <!-- Cek Materi -->
-        <button onclick="toggleMateri()" style="background-color: #00bcd4;">📖 Klik di sini untuk Cari Materi</button>
-        <div id="materi-box" class="card hidden" style="background:#fffde7; font-size:13px;">
-            <b>Petunjuk Misi:</b> Tumbuhan membutuhkan air dan sinar matahari untuk mengolah makanan sendiri melalui proses <i>Fotosintesis</i>.
+        <!-- Modul Materi -->
+        <button onclick="toggleMateri()" style="background-color: #00bcd4;">📖 Baca Materi Pembelajaran</button>
+        <div id="materi-box" class="card hidden" style="background:#fffde7; font-size:13px; text-align:left;">
+            <h4>🌱 Apa itu Fotosintesis?</h4>
+            <p><b>Fotosintesis</b> adalah proses tumbuhan hijau membuat makanannya sendiri.</p>
+            <b>Bahan yang dibutuhkan:</b>
+            <ul>
+                <li><b>Sinar Matahari:</b> Sumber energi utama.</li>
+                <li><b>Air (H₂O):</b> Diserap oleh akar dari dalam tanah.</li>
+                <li><b>Karbondioksida (CO₂):</b> Gas yang diserap daun dari udara.</li>
+                <li><b>Klorofil:</b> Zat hijau daun pencerna energi cahaya.</li>
+            </ul>
+            <b>Hasil Fotosintesis:</b> 🌾 Glukosa (Makanan) & 💨 Oksigen (O₂ untuk bernapas).
         </div>
 
         <!-- Ruang Chat Diskusi -->
-        <h4>💬 Diskusi Kelompok <span id="group-title"></span></h4>
+        <h4>💬 Diskusi <span id="group-title"></span></h4>
         <div id="chat-box"></div>
         <div style="display:flex; gap:5px;">
             <input type="text" id="chat-input" placeholder="Ketik ide/pendapatmu...">
             <button onclick="sendChat()" style="width:30%;">Kirim</button>
         </div>
 
-        <!-- LKPD Drag & Drop -->
-        <h4>🧩 LKPD Bersama: Jodohkan Kebutuhan Tumbuhan</h4>
-        <div class="drag-container">
-            <div class="drop-zone" id="pool" ondrop="drop(event)" ondragover="allowDrop(event)">
-                <small>Pilihan Jawaban:</small>
-                <div class="draggable" draggable="true" ondragstart="drag(event)" id="drag1">☀️ Sinar Matahari</div>
-                <div class="draggable" draggable="true" ondragstart="drag(event)" id="drag2">💧 Air & Nutrisi</div>
+        <!-- Game / Kuis Interaktif -->
+        <div id="quiz-section" class="card" style="background:#e8f5e9;">
+            <h4>🎮 Game Kuis Detektif IPAS</h4>
+            <div id="quiz-body">
+                <p id="quiz-question" style="font-weight:bold; font-size:14px;"></p>
+                <div id="quiz-answers"></div>
             </div>
-            <div class="drop-zone" id="target" ondrop="drop(event)" ondragover="allowDrop(event)">
-                <small>Jawaban Kelompok:</small>
+            <div id="quiz-result" class="hidden" style="text-align:center;">
+                <h3 style="color:#2e7d32;">🎉 Misi Kuis Selesai!</h3>
+                <p id="score-text" style="font-size:16px; font-weight:bold;"></p>
+                <p style="font-size:12px; color:#555;">Nilaimu telah otomatis terkirim ke Guru!</p>
             </div>
         </div>
 
         <!-- Panel Khusus Guru -->
         <div id="guru-panel" class="card hidden" style="background:#f3e5f5; margin-top:15px;">
-            <h4 style="color:#7b1fa2; margin:0 0 10px;">👑 Panel Pemantau Guru</h4>
-            <p style="font-size:12px;">Monitoring keaktifan dan jawaban kelompok secara langsung dari layar ini.</p>
-            <button onclick="resetData()" style="background:#7b1fa2;">Bersihkan Chat & Jawaban Kelompok</button>
+            <h4 style="color:#7b1fa2;">👑 Panel Rekap Nilai & Kontrol Guru</h4>
+            <p style="font-size:12px; text-align:center;">Rekap Hasil Kuis Siswa secara Realtime:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Kelompok</th>
+                        <th>Nilai</th>
+                        <th>Waktu</th>
+                    </tr>
+                </thead>
+                <tbody id="scores-table-body">
+                    <tr><td colspan="4">Belum ada data nilai...</td></tr>
+                </tbody>
+            </table>
+            <button onclick="resetChats()" style="background:#ab47bc; margin-top:15px;">🗑️ Hapus Semua Chat Diskusi</button>
+            <button onclick="resetScores()" style="background:#e53935;">🗑️ Reset Data Nilai</button>
         </div>
     </div>
 
     <script>
-        // Konfigurasi Firebase
+        // Konfigurasi Firebase Anda
         const firebaseConfig = {
             apiKey: "AIzaSyCyAtZbKpkyQAGcPto-bqGwJLbIAJVdjm8",
             authDomain: "diskusi-sd.firebaseapp.com",
@@ -107,35 +140,62 @@
             measurementId: "G-6SLFJVWQ00"
         };
 
-        // Inisialisasi Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let currentUser = "", currentRole = "", currentGroup = "";
+        let currentQuestionIndex = 0, score = 0;
+
+        // Soal Kuis IPAS
+        const quizData = [
+            {
+                q: "1. Apa nama proses pembuatan makanan pada tumbuhan hijau?",
+                options: ["Respirasi", "Fotosintesis", "Evaporasi", "Oksidasi"],
+                answer: 1
+            },
+            {
+                q: "2. Gas apakah yang diserap oleh daun tumbuhan saat berfotosintesis?",
+                options: ["Oksigen", "Nitrogen", "Karbon Dioksida", "Helium"],
+                answer: 2
+            },
+            {
+                q: "3. Zat hijau daun yang berfungsi menyerap cahaya matahari disebut...",
+                options: ["Klorofil", "Akar", "Batang", "Stomata"],
+                answer: 0
+            },
+            {
+                q: "4. Apa hasil dari fotosintesis yang berguna bagi pernapasan manusia?",
+                options: ["Air", "Karbon Dioksida", "Minyak", "Oksigen"],
+                answer: 3
+            }
+        ];
 
         function login() {
             currentUser = document.getElementById('username').value.trim();
             currentRole = document.getElementById('role').value;
             currentGroup = document.getElementById('group').value;
 
-            if(!currentUser) return alert("Isi namamu dulu ya!");
+            if(!currentUser) return alert("Silakan masukkan nama terlebih dahulu!");
 
             document.getElementById('login-card').classList.add('hidden');
             document.getElementById('app-card').classList.remove('hidden');
-            document.getElementById('user-info').innerText = `${currentUser} (${currentRole})`;
+            document.getElementById('user-info').innerText = `${currentUser} (${currentRole === 'guru' ? 'Guru' : 'Siswa'})`;
             document.getElementById('group-title').innerText = currentGroup;
 
             if(currentRole === 'guru') {
                 document.getElementById('guru-panel').classList.remove('hidden');
+                listenScoresForGuru();
             }
 
-            listenFirebase();
+            listenFirebaseChat();
+            loadQuizQuestion();
         }
 
         function toggleMateri() {
             document.getElementById('materi-box').classList.toggle('hidden');
         }
 
+        // --- SISTEM CHAT ---
         function sendChat() {
             const input = document.getElementById('chat-input');
             if(!input.value.trim()) return;
@@ -148,8 +208,7 @@
             input.value = '';
         }
 
-        function listenFirebase() {
-            // Realtime Chat Listener
+        function listenFirebaseChat() {
             db.ref(`chats/${currentGroup}`).on('value', snapshot => {
                 const chatBox = document.getElementById('chat-box');
                 chatBox.innerHTML = '';
@@ -165,18 +224,77 @@
             });
         }
 
-        // Fitur Drag and Drop
-        function allowDrop(ev) { ev.preventDefault(); }
-        function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
-        function drop(ev) {
-            ev.preventDefault();
-            var data = ev.dataTransfer.getData("text");
-            ev.target.appendChild(document.getElementById(data));
+        // --- SISTEM GAME / KUIS ---
+        function loadQuizQuestion() {
+            if (currentQuestionIndex >= quizData.length) {
+                finishQuiz();
+                return;
+            }
+            const q = quizData[currentQuestionIndex];
+            document.getElementById('quiz-question').innerText = q.q;
+            const answersDiv = document.getElementById('quiz-answers');
+            answersDiv.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                answersDiv.innerHTML += `<button class="quiz-option" onclick="checkAnswer(${idx})">${opt}</button>`;
+            });
         }
 
-        function resetData() {
-            if(confirm("Yakin ingin menghapus data diskusi kelompok ini?")) {
-                db.ref(`chats/${currentGroup}`).remove();
+        function checkAnswer(selectedIdx) {
+            if (selectedIdx === quizData[currentQuestionIndex].answer) {
+                score += 25; // Setiap soal bernilai 25 poin (total 100)
+            }
+            currentQuestionIndex++;
+            loadQuizQuestion();
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-body').classList.add('hidden');
+            document.getElementById('quiz-result').classList.remove('hidden');
+            document.getElementById('score-text').innerText = `Skor Akhir Kamu: ${score} / 100`;
+
+            // Simpan Nilai ke Firebase Realtime Database
+            const timeStamp = new Date().toLocaleString('id-ID');
+            db.ref('scores').push({
+                nama: currentUser,
+                kelompok: currentGroup,
+                nilai: score,
+                waktu: timeStamp
+            });
+        }
+
+        // --- SISTEM MONITORING GURU ---
+        function listenScoresForGuru() {
+            db.ref('scores').on('value', snapshot => {
+                const tbody = document.getElementById('scores-table-body');
+                tbody.innerHTML = '';
+                if (!snapshot.exists()) {
+                    tbody.innerHTML = '<tr><td colspan="4">Belum ada data nilai.</td></tr>';
+                    return;
+                }
+                snapshot.forEach(child => {
+                    const d = child.val();
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><b>${d.nama}</b></td>
+                            <td>${d.kelompok}</td>
+                            <td><span class="badge" style="background:#00897b;">${d.nilai}</span></td>
+                            <td><small>${d.waktu}</small></td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        function resetChats() {
+            if(confirm("Yakin ingin menghapus seluruh pesan chat?")) {
+                db.ref('chats').remove();
+            }
+        }
+
+        function resetScores() {
+            if(confirm("Yakin ingin mengosongkan rekap nilai siswa?")) {
+                db.ref('scores').remove();
             }
         }
     </script>
