@@ -11,7 +11,8 @@
         h2, h3, h4 { color: #0277bd; text-align: center; margin-top: 0; }
         button { background-color: #ff9800; color: white; border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px; margin: 5px 0; width: 100%; }
         button:hover { background-color: #f57c00; }
-        input, select { width: 100%; padding: 10px; margin: 5px 0 10px; border: 2px solid #81d4fa; border-radius: 10px; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px; border: 2px solid #81d4fa; border-radius: 10px; font-size: 14px; }
+        textarea { resize: vertical; min-height: 80px; }
         
         /* Chat Box */
         #chat-box { height: 180px; overflow-y: auto; border: 2px dashed #b2ebf2; padding: 10px; border-radius: 10px; background: #f1f8e9; margin-bottom: 10px; }
@@ -19,7 +20,7 @@
         .msg-sender { font-weight: bold; color: #2e7d32; font-size: 11px; }
 
         /* Game / Quiz Styling */
-        .quiz-option { display: block; background: #e3f2fd; padding: 10px; margin: 5px 0; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; color: #0d47a1; border: 1px solid #90caf9; }
+        .quiz-option { display: block; background: #e3f2fd; padding: 10px; margin: 5px 0; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; color: #0d47a1; border: 1px solid #90caf9; width:100%; }
         .quiz-option:hover { background: #bbdefb; }
 
         /* Tabel Rekap Nilai */
@@ -29,6 +30,7 @@
 
         .hidden { display: none; }
         .badge { background: #4caf50; color: white; padding: 4px 10px; border-radius: 10px; font-size: 12px; }
+        .form-soal { background: #fff3e0; padding: 10px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #ffe0b2; }
     </style>
     <!-- Firebase SDK (v8 CDN) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -66,21 +68,12 @@
             <button onclick="location.reload()" style="width:auto; padding:5px 10px; background:#e53935;">Keluar</button>
         </div>
 
-        <h3>🔍 Misi IPAS: Fotosintesis Tumbuhan</h3>
+        <h3 id="materi-title">🔍 Misi Pembelajaran</h3>
 
         <!-- Modul Materi -->
         <button onclick="toggleMateri()" style="background-color: #00bcd4;">📖 Baca Materi Pembelajaran</button>
-        <div id="materi-box" class="card hidden" style="background:#fffde7; font-size:13px; text-align:left;">
-            <h4>🌱 Apa itu Fotosintesis?</h4>
-            <p><b>Fotosintesis</b> adalah proses tumbuhan hijau membuat makanannya sendiri.</p>
-            <b>Bahan yang dibutuhkan:</b>
-            <ul>
-                <li><b>Sinar Matahari:</b> Sumber energi utama.</li>
-                <li><b>Air (H₂O):</b> Diserap oleh akar dari dalam tanah.</li>
-                <li><b>Karbondioksida (CO₂):</b> Gas yang diserap daun dari udara.</li>
-                <li><b>Klorofil:</b> Zat hijau daun pencerna energi cahaya.</li>
-            </ul>
-            <b>Hasil Fotosintesis:</b> 🌾 Glukosa (Makanan) & 💨 Oksigen (O₂ untuk bernapas).
+        <div id="materi-box" class="card hidden" style="background:#fffde7; font-size:13px; text-align:left; white-space: pre-line;">
+            <div id="materi-content">Sedang memuat materi dari Guru...</div>
         </div>
 
         <!-- Ruang Chat Diskusi -->
@@ -93,9 +86,9 @@
 
         <!-- Game / Kuis Interaktif -->
         <div id="quiz-section" class="card" style="background:#e8f5e9;">
-            <h4>🎮 Game Kuis Detektif IPAS</h4>
+            <h4>🎮 Game Kuis Detektif</h4>
             <div id="quiz-body">
-                <p id="quiz-question" style="font-weight:bold; font-size:14px;"></p>
+                <p id="quiz-question" style="font-weight:bold; font-size:14px;">Memuat soal...</p>
                 <div id="quiz-answers"></div>
             </div>
             <div id="quiz-result" class="hidden" style="text-align:center;">
@@ -107,8 +100,36 @@
 
         <!-- Panel Khusus Guru -->
         <div id="guru-panel" class="card hidden" style="background:#f3e5f5; margin-top:15px;">
-            <h4 style="color:#7b1fa2;">👑 Panel Rekap Nilai & Kontrol Guru</h4>
-            <p style="font-size:12px; text-align:center;">Rekap Hasil Kuis Siswa secara Realtime:</p>
+            <h4 style="color:#7b1fa2;">👑 Panel Pengaturan Materi & Soal (Guru)</h4>
+            
+            <!-- Form Edit Materi -->
+            <div class="form-soal">
+                <b>📝 Input / Ubah Materi Pembelajaran:</b>
+                <input type="text" id="input-materi-title" placeholder="Judul Topik (Contoh: IPAS - Fotosintesis)">
+                <textarea id="input-materi-body" placeholder="Tuliskan isi ringkasan materi pembelajaran di sini..."></textarea>
+                <button onclick="saveMateri()" style="background:#0288d1;">💾 Simpan Materi Ke Siswa</button>
+            </div>
+
+            <!-- Form Tambah Soal -->
+            <div class="form-soal">
+                <b>❓ Tambah Soal Kuis Baru:</b>
+                <input type="text" id="input-q" placeholder="Pertanyaan Soal...">
+                <input type="text" id="input-opt0" placeholder="Pilihan A">
+                <input type="text" id="input-opt1" placeholder="Pilihan B">
+                <input type="text" id="input-opt2" placeholder="Pilihan C">
+                <input type="text" id="input-opt3" placeholder="Pilihan D">
+                <label>Kunci Jawaban Benar:</label>
+                <select id="input-correct">
+                    <option value="0">Pilihan A</option>
+                    <option value="1">Pilihan B</option>
+                    <option value="2">Pilihan C</option>
+                    <option value="3">Pilihan D</option>
+                </select>
+                <button onclick="addQuestion()" style="background:#2e7d32;">➕ Tambah Soal ke Kuis</button>
+                <button onclick="resetQuestions()" style="background:#d32f2f;">🗑️ Hapus Semua Soal Kuis</button>
+            </div>
+
+            <h4 style="color:#7b1fa2; margin-top:20px;">📊 Rekap Nilai Siswa</h4>
             <table>
                 <thead>
                     <tr>
@@ -123,7 +144,7 @@
                 </tbody>
             </table>
             <button onclick="resetChats()" style="background:#ab47bc; margin-top:15px;">🗑️ Hapus Semua Chat Diskusi</button>
-            <button onclick="resetScores()" style="background:#e53935;">🗑️ Reset Data Nilai</button>
+            <button onclick="resetScores()" style="background:#e53935;">🗑️️ Reset Data Nilai</button>
         </div>
     </div>
 
@@ -145,30 +166,7 @@
 
         let currentUser = "", currentRole = "", currentGroup = "";
         let currentQuestionIndex = 0, score = 0;
-
-        // Soal Kuis IPAS
-        const quizData = [
-            {
-                q: "1. Apa nama proses pembuatan makanan pada tumbuhan hijau?",
-                options: ["Respirasi", "Fotosintesis", "Evaporasi", "Oksidasi"],
-                answer: 1
-            },
-            {
-                q: "2. Gas apakah yang diserap oleh daun tumbuhan saat berfotosintesis?",
-                options: ["Oksigen", "Nitrogen", "Karbon Dioksida", "Helium"],
-                answer: 2
-            },
-            {
-                q: "3. Zat hijau daun yang berfungsi menyerap cahaya matahari disebut...",
-                options: ["Klorofil", "Akar", "Batang", "Stomata"],
-                answer: 0
-            },
-            {
-                q: "4. Apa hasil dari fotosintesis yang berguna bagi pernapasan manusia?",
-                options: ["Air", "Karbon Dioksida", "Minyak", "Oksigen"],
-                answer: 3
-            }
-        ];
+        let quizData = [];
 
         function login() {
             currentUser = document.getElementById('username').value.trim();
@@ -188,11 +186,131 @@
             }
 
             listenFirebaseChat();
-            loadQuizQuestion();
+            listenMateri();
+            listenQuizQuestions();
         }
 
         function toggleMateri() {
             document.getElementById('materi-box').classList.toggle('hidden');
+        }
+
+        // --- MANAJEMEN MATERI (DINAMIS) ---
+        function saveMateri() {
+            const title = document.getElementById('input-materi-title').value.trim();
+            const body = document.getElementById('input-materi-body').value.trim();
+            if(!title || !body) return alert("Isi Judul dan Ringkasan Materi terlebih dahulu!");
+
+            db.ref('materi_aktif').set({
+                judul: title,
+                isi: body
+            }).then(() => alert("Materi berhasil diperbarui untuk seluruh siswa!"));
+        }
+
+        function listenMateri() {
+            db.ref('materi_aktif').on('value', snapshot => {
+                if(snapshot.exists()) {
+                    const data = snapshot.val();
+                    document.getElementById('materi-title').innerText = `🔍 ${data.judul}`;
+                    document.getElementById('materi-content').innerText = data.isi;
+                } else {
+                    document.getElementById('materi-content').innerText = "Belum ada materi dari Guru.";
+                }
+            });
+        }
+
+        // --- MANAJEMEN SOAL KUIS (DINAMIS) ---
+        function addQuestion() {
+            const q = document.getElementById('input-q').value.trim();
+            const opt0 = document.getElementById('input-opt0').value.trim();
+            const opt1 = document.getElementById('input-opt1').value.trim();
+            const opt2 = document.getElementById('input-opt2').value.trim();
+            const opt3 = document.getElementById('input-opt3').value.trim();
+            const correct = parseInt(document.getElementById('input-correct').value);
+
+            if(!q || !opt0 || !opt1 || !opt2 || !opt3) return alert("Lengkapi semua teks pertanyaan dan pilihan A-D!");
+
+            db.ref('questions').push({
+                q: q,
+                options: [opt0, opt1, opt2, opt3],
+                answer: correct
+            }).then(() => {
+                alert("Soal berhasil ditambahkan!");
+                document.getElementById('input-q').value = '';
+                document.getElementById('input-opt0').value = '';
+                document.getElementById('input-opt1').value = '';
+                document.getElementById('input-opt2').value = '';
+                document.getElementById('input-opt3').value = '';
+            });
+        }
+
+        function resetQuestions() {
+            if(confirm("Hapus semua daftar soal kuis?")) {
+                db.ref('questions').remove();
+            }
+        }
+
+        function listenQuizQuestions() {
+            db.ref('questions').on('value', snapshot => {
+                quizData = [];
+                if(snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        quizData.push(child.val());
+                    });
+                }
+                currentQuestionIndex = 0;
+                score = 0;
+                document.getElementById('quiz-body').classList.remove('hidden');
+                document.getElementById('quiz-result').classList.add('hidden');
+                loadQuizQuestion();
+            });
+        }
+
+        function loadQuizQuestion() {
+            if (quizData.length === 0) {
+                document.getElementById('quiz-question').innerText = "Belum ada soal kuis yang dibuat oleh Guru.";
+                document.getElementById('quiz-answers').innerHTML = "";
+                return;
+            }
+
+            if (currentQuestionIndex >= quizData.length) {
+                finishQuiz();
+                return;
+            }
+
+            const q = quizData[currentQuestionIndex];
+            document.getElementById('quiz-question').innerText = `${currentQuestionIndex + 1}. ${q.q}`;
+            const answersDiv = document.getElementById('quiz-answers');
+            answersDiv.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                answersDiv.innerHTML += `<button class="quiz-option" onclick="checkAnswer(${idx})">${opt}</button>`;
+            });
+        }
+
+        function checkAnswer(selectedIdx) {
+            const poinPerSoal = 100 / quizData.length;
+            if (selectedIdx === quizData[currentQuestionIndex].answer) {
+                score += poinPerSoal;
+            }
+            currentQuestionIndex++;
+            loadQuizQuestion();
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-body').classList.add('hidden');
+            document.getElementById('quiz-result').classList.remove('hidden');
+            const finalScore = Math.round(score);
+            document.getElementById('score-text').innerText = `Skor Akhir Kamu: ${finalScore} / 100`;
+
+            if(currentRole === 'siswa') {
+                const timeStamp = new Date().toLocaleString('id-ID');
+                db.ref('scores').push({
+                    nama: currentUser,
+                    kelompok: currentGroup,
+                    nilai: finalScore,
+                    waktu: timeStamp
+                });
+            }
         }
 
         // --- SISTEM CHAT ---
@@ -224,46 +342,7 @@
             });
         }
 
-        // --- SISTEM GAME / KUIS ---
-        function loadQuizQuestion() {
-            if (currentQuestionIndex >= quizData.length) {
-                finishQuiz();
-                return;
-            }
-            const q = quizData[currentQuestionIndex];
-            document.getElementById('quiz-question').innerText = q.q;
-            const answersDiv = document.getElementById('quiz-answers');
-            answersDiv.innerHTML = '';
-
-            q.options.forEach((opt, idx) => {
-                answersDiv.innerHTML += `<button class="quiz-option" onclick="checkAnswer(${idx})">${opt}</button>`;
-            });
-        }
-
-        function checkAnswer(selectedIdx) {
-            if (selectedIdx === quizData[currentQuestionIndex].answer) {
-                score += 25; // Setiap soal bernilai 25 poin (total 100)
-            }
-            currentQuestionIndex++;
-            loadQuizQuestion();
-        }
-
-        function finishQuiz() {
-            document.getElementById('quiz-body').classList.add('hidden');
-            document.getElementById('quiz-result').classList.remove('hidden');
-            document.getElementById('score-text').innerText = `Skor Akhir Kamu: ${score} / 100`;
-
-            // Simpan Nilai ke Firebase Realtime Database
-            const timeStamp = new Date().toLocaleString('id-ID');
-            db.ref('scores').push({
-                nama: currentUser,
-                kelompok: currentGroup,
-                nilai: score,
-                waktu: timeStamp
-            });
-        }
-
-        // --- SISTEM MONITORING GURU ---
+        // --- MONITORING GURU ---
         function listenScoresForGuru() {
             db.ref('scores').on('value', snapshot => {
                 const tbody = document.getElementById('scores-table-body');
