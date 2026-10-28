@@ -45,10 +45,16 @@
         <input type="text" id="username" placeholder="Masukkan namamu...">
         
         <label>Masuk Sebagai:</label>
-        <select id="role">
+        <select id="role" onchange="checkRoleSelect()">
             <option value="siswa">Siswa (Detektif)</option>
             <option value="guru">Guru (Ketua Detektif)</option>
         </select>
+
+        <!-- Form Khusus PIN Guru (Tersembunyi secara bawaan) -->
+        <div id="pin-container" class="hidden">
+            <label style="color:#d32f2f; font-weight:bold;">🔑 PIN Rahasia Guru:</label>
+            <input type="password" id="guru-pin" placeholder="Masukkan PIN Guru...">
+        </div>
 
         <label>Pilih Kelompok:</label>
         <select id="group">
@@ -116,7 +122,7 @@
                 <p style="font-size:11px; color:#3f51b5; margin:3px 0 8px;">Copy materi Anda ke Gemini/ChatGPT, minta buatkan soal JSON, lalu tempel kodenya di bawah ini:</p>
                 <textarea id="input-json-soal" placeholder='Tempel teks format JSON buatan AI di sini, misal: [{"q":"Soal...","options":["A","B","C","D"],"answer":0}]' style="min-height:110px; font-family:monospace; font-size:11px;"></textarea>
                 <button onclick="importJSONSoal()" style="background:#3f51b5;">🚀 Impor & Terbitkan Soal Massal</button>
-                <button onclick="resetQuestions()" style="background:#d32f2f;">🗑️️ Hapus Semua Soal Kuis Saat Ini</button>
+                <button onclick="resetQuestions()" style="background:#d32f2f;">🗑️ Hapus Semua Soal Kuis Saat Ini</button>
             </div>
 
             <h4 style="color:#7b1fa2; margin-top:20px;">📊 Rekap Nilai Siswa</h4>
@@ -154,9 +160,22 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // KATA SANDI / PIN RAHASIA GURU (Bisa Anda ubah di sini)
+        const PIN_GURU_RAHASIA = "1234";
+
         let currentUser = "", currentRole = "", currentGroup = "";
         let currentQuestionIndex = 0, score = 0;
         let quizData = [];
+
+        function checkRoleSelect() {
+            const roleSelect = document.getElementById('role').value;
+            const pinContainer = document.getElementById('pin-container');
+            if (roleSelect === 'guru') {
+                pinContainer.classList.remove('hidden');
+            } else {
+                pinContainer.classList.add('hidden');
+            }
+        }
 
         function login() {
             currentUser = document.getElementById('username').value.trim();
@@ -164,6 +183,15 @@
             currentGroup = document.getElementById('group').value;
 
             if(!currentUser) return alert("Silakan masukkan nama terlebih dahulu!");
+
+            // Cek Keamanan PIN Guru
+            if(currentRole === 'guru') {
+                const inputPin = document.getElementById('guru-pin').value;
+                if(inputPin !== PIN_GURU_RAHASIA) {
+                    alert("❌ PIN Guru Salah! Anda tidak memiliki akses sebagai Guru.");
+                    return;
+                }
+            }
 
             document.getElementById('login-card').classList.add('hidden');
             document.getElementById('app-card').classList.remove('hidden');
@@ -214,7 +242,6 @@
             if(!rawJson) return alert("Tempelkan data teks JSON hasil buatan AI terlebih dahulu!");
 
             try {
-                // Bersihkan karakter markdown pembalut kode (seperti ```json ... ```) jika terbawa saat copy
                 const cleanJson = rawJson.replace(/```json/g, '').replace(/```/g, '').trim();
                 const parsedData = JSON.parse(cleanJson);
 
@@ -223,7 +250,6 @@
                 }
 
                 if(confirm(`Yakin ingin mengimpor ${parsedData.length} soal baru ini ke dalam kuis?`)) {
-                    // Timpa data soal di database Firebase
                     db.ref('questions').set(parsedData).then(() => {
                         alert(`Berhasil mengimpor ${parsedData.length} soal ke dalam aplikasi!`);
                         document.getElementById('input-json-soal').value = '';
