@@ -17,6 +17,11 @@
         input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px; border: 2px solid #81d4fa; border-radius: 10px; font-size: 14px; }
         textarea { resize: vertical; min-height: 80px; }
         
+        /* Panduan Alur Kerja Siswa */
+        .guide-box { background: #e0f2f1; border: 2px solid #00897b; padding: 12px; border-radius: 10px; margin-bottom: 15px; font-size: 12px; color: #004d40; text-align: left; }
+        .guide-box ol { margin: 5px 0 0 20px; padding: 0; }
+        .guide-box li { margin-bottom: 4px; }
+
         /* Chat Box & Peran Tim */
         #chat-box { height: 180px; overflow-y: auto; border: 2px dashed #b2ebf2; padding: 10px; border-radius: 10px; background: #f1f8e9; margin-bottom: 10px; }
         .msg { background: white; padding: 6px 10px; border-radius: 10px; margin-bottom: 5px; font-size: 13px; border-left: 4px solid #4caf50; }
@@ -25,7 +30,7 @@
         .emoji-btn { width: auto; padding: 4px 8px; font-size: 16px; background: #e0f2f1; border: 1px solid #80cbd4; border-radius: 10px; cursor: pointer; margin: 0; }
         .role-badge { background: #e91e63; color: white; padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 5px; }
 
-        /* Fitur Poling / Voting Tim */
+        /* Poling / Voting Tim */
         .poll-box { background: #ede7f6; border: 2px solid #7e57c2; padding: 12px; border-radius: 10px; margin-bottom: 12px; text-align: left; font-size: 13px; }
 
         /* Permainan Kartu Misteri */
@@ -92,6 +97,17 @@
         </div>
 
         <h3 id="materi-title">🔍 Dokumen Kasus & Buku Materi PDF (Full Teks)</h3>
+
+        <!-- PETUNJUK LENGKAP ALUR KERJA SISWA -->
+        <div class="guide-box">
+            <b>📜 PANDUAN ALUR KERJA DETEKTIF TIM:</b>
+            <ol>
+                <li><b>Baca Materi:</b> Klik tombol "Baca Full Isi Buku PDF" di atas untuk mencari bukti dan fakta penting.</li>
+                <li><b>Ambil Kartu Misteri:</b> Tarik kartu tantangan kelompok untuk memicu bahan diskusi.</li>
+                <li><b>Berdebat & Poling:</b> Diskusikan jawaban bersama anggota kelompok di ruang chat, lalu klik <b>"👍 Sepakat"</b> di kotak Poling Mufakat. Tombol jawab akan terbuka jika minimal 2 anggota tim sepakat!</li>
+                <li><b>Selesaikan Tantangan:</b> Jawab soal HOTS, ketik kata kunci, atau susun urutan kronologi sebelum waktu 60 detik habis. Tim memiliki 5 Nyawa. Jika habis, lakukan refleksi untuk membangkitkan nyawa kembali!</li>
+            </ol>
+        </div>
 
         <button onclick="toggleMateri()" style="background-color: #00bcd4;">📖 Baca Full Isi Buku PDF dari Guru</button>
         <div id="materi-box" class="card hidden" style="background:#fffde7; font-size:13px; text-align:left; white-space: pre-line; max-height: 350px; overflow-y: auto;">
@@ -279,7 +295,7 @@
         let timeLeft = 60;
         let extractedPdfText = "";
         let totalVotesSepakat = 0;
-        let hasRevived = false; // Memastikan fitur revive hanya bisa digunakan 1x per sesi
+        let hasRevived = false;
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
@@ -332,7 +348,6 @@
                 }
                 pollDisplay.innerText = resultStr;
 
-                // Kunci ganda: Tombol jawaban hanya terbuka jika minimal 2 suara sepakat
                 updateButtonLockState(totalVotesSepakat >= 2);
             });
         }
@@ -603,7 +618,6 @@ ${extractedPdfText.substring(0, 15000)}`;
         }
 
         function loadQuizQuestion() {
-            // Reset poling setiap ganti soal
             db.ref(`polls/${currentGroup}`).remove();
 
             if (quizData.length === 0) {
@@ -658,7 +672,6 @@ ${extractedPdfText.substring(0, 15000)}`;
                 container.innerHTML = html;
             }
 
-            // Kunci awal sebelum ada vote
             updateButtonLockState(totalVotesSepakat >= 2);
         }
 
@@ -725,7 +738,6 @@ ${extractedPdfText.substring(0, 15000)}`;
             loadQuizQuestion();
         }
 
-        // --- SISTEM PEMBANGKIT NYAWA (REVIVE SYSTEM) ---
         function gameOver(reason) {
             clearInterval(timer);
             document.getElementById('quiz-body').classList.add('hidden');
@@ -735,7 +747,6 @@ ${extractedPdfText.substring(0, 15000)}`;
             document.getElementById('quiz-result').classList.remove('hidden');
             document.getElementById('result-title').innerText = `❌ Misi Terhenti (${reason})`;
 
-            // Jika belum pernah menggunakan kesempatan Revive
             if(!hasRevived) {
                 document.getElementById('revive-box').classList.remove('hidden');
                 document.getElementById('sertifikat-box').classList.add('hidden');
@@ -751,7 +762,6 @@ ${extractedPdfText.substring(0, 15000)}`;
                 return alert("Tuliskan kalimat refleksi analisis tim dengan jelas (minimal 10 karakter)!");
             }
 
-            // Kirim pesan refleksi ke chat kelompok
             db.ref(`chats/${currentGroup}`).push({
                 sender: `💖 Refleksi Pembangkit Nyawa (${currentUser})`,
                 text: `Alasan Refleksi Tim: "${reasonInput}"`,
@@ -759,7 +769,7 @@ ${extractedPdfText.substring(0, 15000)}`;
             });
 
             hasRevived = true;
-            lives = 2; // Pembangkitan memberikan 2 nyawa tambahan
+            lives = 2;
             alert("✨ Refleksi diterima! Tim kamu mendapat +2 Nyawa Tambahan untuk melanjutkan misi!");
 
             document.getElementById('revive-box').classList.add('hidden');
