@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ruang Diskusi Detektif Cilik SD - Full PDF & Voting</title>
+    <title>Ruang Diskusi Detektif Cilik SD - Studio AI PDF</title>
     <!-- PDF.js untuk membaca file PDF langsung di browser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
@@ -13,6 +13,7 @@
         h2, h3, h4 { color: #0277bd; text-align: center; margin-top: 0; }
         button { background-color: #ff9800; color: white; border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px; margin: 5px 0; width: 100%; }
         button:hover { background-color: #f57c00; }
+        button:disabled { background-color: #b0bec5 !important; cursor: not-allowed; }
         input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px; border: 2px solid #81d4fa; border-radius: 10px; font-size: 14px; }
         textarea { resize: vertical; min-height: 80px; }
         
@@ -57,7 +58,7 @@
 
     <!-- HALAMAN LOGIN -->
     <div id="login-card" class="card">
-        <h2>🕵️ Detektif Cilik SD - Full PDF & Voting</h2>
+        <h2>🕵️ Detektif Cilik SD - Studio AI PDF</h2>
         <label>Nama Siswa / Guru:</label>
         <input type="text" id="username" placeholder="Masukkan namamu...">
         
@@ -92,7 +93,6 @@
 
         <h3 id="materi-title">🔍 Dokumen Kasus & Buku Materi PDF (Full Teks)</h3>
 
-        <!-- Tombol Buka Materi PDF Utuh -->
         <button onclick="toggleMateri()" style="background-color: #00bcd4;">📖 Baca Full Isi Buku PDF dari Guru</button>
         <div id="materi-box" class="card hidden" style="background:#fffde7; font-size:13px; text-align:left; white-space: pre-line; max-height: 350px; overflow-y: auto;">
             <div id="materi-content">Sedang memuat materi lengkap...</div>
@@ -124,15 +124,15 @@
             </table>
         </div>
 
-        <!-- FITUR BARU: POLING / VOTING KELOMPOK -->
+        <!-- POLING / VOTING KELOMPOK (KUNCI GANDA) -->
         <div class="poll-box">
-            <h4 style="color:#512da8; margin:0 0 5px;">📊 Poling Diskusi Mufakat Tim</h4>
-            <p style="font-size:11px; margin:0 0 5px;">Apakah kelompokmu sepakat dengan jawaban tantangan saat ini?</p>
+            <h4 style="color:#512da8; margin:0 0 5px;">📊 Poling Konsensus Mufakat Tim</h4>
+            <p style="font-size:11px; margin:0 0 5px;">*Tombol Jawab akan terbuka jika minimal 2 anggota tim menekan "Sepakat"*</p>
             <div style="display:flex; gap:10px;">
-                <button onclick="kirimVoting('✅ SEPAKAT (Yakin Benar)')" style="background:#4caf50; padding:6px; font-size:12px; margin:0;">👍 Sepakat (Yakin)</button>
-                <button onclick="kirimVoting('❌ BELUM SEPAKAT (Perlu Diskusi Lagi)')" style="background:#e53935; padding:6px; font-size:12px; margin:0;">👎 Belum Sepakat</button>
+                <button onclick="kirimVoting('✅ SEPAKAT')" style="background:#4caf50; padding:6px; font-size:12px; margin:0;">👍 Sepakat Mufakat</button>
+                <button onclick="kirimVoting('❌ PERLU DISKUSI')" style="background:#e53935; padding:6px; font-size:12px; margin:0;">👎 Perlu Diskusi</button>
             </div>
-            <div id="poll-result-display" style="font-size:11px; margin-top:8px; font-weight:bold; color:#4527a0;">Belum ada voting kelompok.</div>
+            <div id="poll-result-display" style="font-size:11px; margin-top:8px; font-weight:bold; color:#4527a0;">Belum ada voting suara kelompok.</div>
         </div>
 
         <!-- Ruang Chat Debat -->
@@ -141,14 +141,14 @@
         <div id="chat-box"></div>
         <div class="emoji-bar">
             <button class="emoji-btn" onclick="sendEmoji('👍 Sepakat Ini Jawabannya!')">👍 Sepakat</button>
-            <button class="emoji-btn" onclick="sendEmoji('🤔 Tunggu, Analisis Dulu!')">🤔 Analisis</button>
+            <button class="emoji-btn" onclick="sendEmoji('🤔 Tunggu, Cek Buku PDF!')">📖 Cek Buku</button>
             <button class="emoji-btn" onclick="sendEmoji('💡 Petunjuk Ketemu!')">💡 Petunjuk</button>
             <button class="emoji-btn" onclick="sendEmoji('❌ Awas Jebakan Soal!')">❌ Jebakan</button>
         </div>
 
         <div style="display:flex; gap:5px;">
-            <input type="text" id="chat-input" placeholder="Tulis argumen kritis kelompokmu...">
-            <button onclick="sendChat()" style="width:30%;">Kirim</button>
+            <input type="text" id="chat-input" placeholder="Tulis argumen / bukti halaman PDF kelompokmu...">
+            <button onclick="sendChat()" style="width:30%;">Kirim Argumen</button>
         </div>
 
         <!-- Game / Misi Investigasi -->
@@ -179,6 +179,15 @@
             <div id="quiz-result" class="hidden" style="text-align:center;">
                 <h3 id="result-title" style="color:#2e7d32;">🎉 Misi Investigasi Selesai!</h3>
                 <p id="score-text" style="font-size:16px; font-weight:bold;"></p>
+                
+                <!-- BOX PEMBANGKIT NYAWA (REVIVE SYSTEM) -->
+                <div id="revive-box" class="hidden" style="background:#ffe0b2; border:2px dashed #f57c00; padding:15px; border-radius:10px; margin:10px 0;">
+                    <h4 style="color:#e65100; margin:0 0 5px;">💖 MISI PEMBANGKIT NYAWA KELOMPOK</h4>
+                    <p style="font-size:12px; color:#5d4037;">Nyawa tim kamu telah habis! Namun tim bisa bangkit kembali mendapat <b>+2 Nyawa Tambahan</b> jika menyelesaikan Syarat Refleksi Kelompok di bawah ini:</p>
+                    <textarea id="revive-reason-input" placeholder="Tuliskan analisis ringkas bersama di ruang chat: Mengapa kelompokmu tadi bisa salah dan apa strategi barumu?"></textarea>
+                    <button onclick="prosesReviveTim()" style="background:#e65100;">✨ Kirim Syarat Refleksi & Bangkitkan Nyawa (+2 ❤️)</button>
+                </div>
+
                 <div id="sertifikat-box" class="cert-card">
                     <h2 style="color:#f57f17; margin-bottom:5px;">🎖️ SERTIFIKAT TIM INVESTIGASI</h2>
                     <p style="font-size:12px; margin:2px;">Diberikan kepada:</p>
@@ -269,6 +278,8 @@
         let timer = null;
         let timeLeft = 60;
         let extractedPdfText = "";
+        let totalVotesSepakat = 0;
+        let hasRevived = false; // Memastikan fitur revive hanya bisa digunakan 1x per sesi
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
@@ -302,20 +313,39 @@
         function listenPolls() {
             db.ref(`polls/${currentGroup}`).on('value', snapshot => {
                 const pollDisplay = document.getElementById('poll-result-display');
+                totalVotesSepakat = 0;
                 if(!snapshot.exists()) {
-                    pollDisplay.innerText = "Belum ada voting suara kelompok.";
+                    pollDisplay.innerText = "Belum ada voting mufakat kelompok.";
+                    updateButtonLockState(false);
                     return;
                 }
                 const votes = {};
                 snapshot.forEach(child => {
                     const d = child.val();
                     votes[d.pilihan] = (votes[d.pilihan] || 0) + 1;
+                    if(d.pilihan === '✅ SEPAKAT') totalVotesSepakat++;
                 });
+                
                 let resultStr = "Hasil Poling Tim: ";
                 for(let key in votes) {
                     resultStr += `[${key}: ${votes[key]} suara] `;
                 }
                 pollDisplay.innerText = resultStr;
+
+                // Kunci ganda: Tombol jawaban hanya terbuka jika minimal 2 suara sepakat
+                updateButtonLockState(totalVotesSepakat >= 2);
+            });
+        }
+
+        function updateButtonLockState(isUnlocked) {
+            const missionButtons = document.querySelectorAll('#interactive-mission-container button');
+            missionButtons.forEach(btn => {
+                btn.disabled = !isUnlocked;
+                if(!isUnlocked) {
+                    btn.title = "Tunggu minimal 2 anggota tim menekan 'Sepakat' di Poling Mufakat!";
+                } else {
+                    btn.title = "";
+                }
             });
         }
 
@@ -357,10 +387,10 @@
 
         function assignRandomRole() {
             const roles = [
-                "🕵️ Ketua Analis: Memimpin Diskusi",
-                "🔍 Pencari Fakta: Mengecek Buku PDF",
-                "⚖️ Juru Mufakat: Mengambil Keputusan",
-                "📝 Pencatat Argumen: Merangkum Pendapat"
+                "🕵️ Ketua Analis: Memimpin Diskusi & Mufakat",
+                "🔍 Pencari Fakta: Mengecek Dokumen PDF",
+                "⚖️ Juru Mufakat: Memverifikasi Suara Voting",
+                "📝 Pencatat Bukti: Merangkum Argumen Chat"
             ];
             document.getElementById('user-assigned-role').innerText = `Peran Kamu: ${roles[Math.floor(Math.random() * roles.length)]}`;
         }
@@ -425,7 +455,6 @@
                         extractedPdfText += `--- HALAMAN ${i} ---\n` + pageText + "\n\n";
                     }
 
-                    // SIMPAN FULL TEKS PDF TANPA PEMOTONGAN KE FIREBASE
                     db.ref('materi_aktif').set({
                         judul: `Buku Materi: ${file.name}`,
                         isi: extractedPdfText
@@ -484,7 +513,7 @@ ${extractedPdfText.substring(0, 15000)}`;
                 if(snapshot.exists()) {
                     const data = snapshot.val();
                     document.getElementById('materi-title').innerText = `🔍 ${data.judul}`;
-                    document.getElementById('materi-content').innerText = data.isi; // Tampil full teks
+                    document.getElementById('materi-content').innerText = data.isi;
                 }
             });
         }
@@ -529,11 +558,13 @@ ${extractedPdfText.substring(0, 15000)}`;
                 currentQuestionIndex = 0;
                 score = 0;
                 lives = 5;
+                hasRevived = false;
                 document.getElementById('quiz-body').classList.remove('hidden');
                 document.getElementById('scenario-container').classList.remove('hidden');
                 document.getElementById('quiz-stats-bar').classList.remove('hidden');
                 document.getElementById('explanation-box').classList.add('hidden');
                 document.getElementById('quiz-result').classList.add('hidden');
+                document.getElementById('revive-box').classList.add('hidden');
                 loadQuizQuestion();
             });
         }
@@ -567,11 +598,14 @@ ${extractedPdfText.substring(0, 15000)}`;
         }
 
         function updateLivesDisplay() {
-            let hearts = "❤️".repeat(lives) + "🖤".repeat(5 - lives);
+            let hearts = "❤️".repeat(Math.max(0, lives)) + "🖤".repeat(Math.max(0, 5 - lives));
             document.getElementById('lives-display').innerText = `Nyawa Tim: ${hearts} (${lives}/5)`;
         }
 
         function loadQuizQuestion() {
+            // Reset poling setiap ganti soal
+            db.ref(`polls/${currentGroup}`).remove();
+
             if (quizData.length === 0) {
                 document.getElementById('scenario-text').innerText = "Belum ada tantangan diterbitkan Guru.";
                 document.getElementById('quiz-question').innerText = "";
@@ -623,6 +657,9 @@ ${extractedPdfText.substring(0, 15000)}`;
                 html += '</div><button onclick="checkAnswerOrdering()" style="background:#0288d1; margin-top:5px;">🚀 Kunci Urutan</button>';
                 container.innerHTML = html;
             }
+
+            // Kunci awal sebelum ada vote
+            updateButtonLockState(totalVotesSepakat >= 2);
         }
 
         function moveItem(index, direction) {
@@ -688,6 +725,7 @@ ${extractedPdfText.substring(0, 15000)}`;
             loadQuizQuestion();
         }
 
+        // --- SISTEM PEMBANGKIT NYAWA (REVIVE SYSTEM) ---
         function gameOver(reason) {
             clearInterval(timer);
             document.getElementById('quiz-body').classList.add('hidden');
@@ -695,7 +733,42 @@ ${extractedPdfText.substring(0, 15000)}`;
             document.getElementById('explanation-box').classList.add('hidden');
             document.getElementById('quiz-stats-bar').classList.add('hidden');
             document.getElementById('quiz-result').classList.remove('hidden');
-            document.getElementById('result-title').innerText = `❌ Misi Gagal (${reason})`;
+            document.getElementById('result-title').innerText = `❌ Misi Terhenti (${reason})`;
+
+            // Jika belum pernah menggunakan kesempatan Revive
+            if(!hasRevived) {
+                document.getElementById('revive-box').classList.remove('hidden');
+                document.getElementById('sertifikat-box').classList.add('hidden');
+            } else {
+                document.getElementById('revive-box').classList.add('hidden');
+                document.getElementById('sertifikat-box').classList.remove('hidden');
+            }
+        }
+
+        function prosesReviveTim() {
+            const reasonInput = document.getElementById('revive-reason-input').value.trim();
+            if(!reasonInput || reasonInput.length < 10) {
+                return alert("Tuliskan kalimat refleksi analisis tim dengan jelas (minimal 10 karakter)!");
+            }
+
+            // Kirim pesan refleksi ke chat kelompok
+            db.ref(`chats/${currentGroup}`).push({
+                sender: `💖 Refleksi Pembangkit Nyawa (${currentUser})`,
+                text: `Alasan Refleksi Tim: "${reasonInput}"`,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+
+            hasRevived = true;
+            lives = 2; // Pembangkitan memberikan 2 nyawa tambahan
+            alert("✨ Refleksi diterima! Tim kamu mendapat +2 Nyawa Tambahan untuk melanjutkan misi!");
+
+            document.getElementById('revive-box').classList.add('hidden');
+            document.getElementById('quiz-result').classList.add('hidden');
+            document.getElementById('quiz-body').classList.remove('hidden');
+            document.getElementById('scenario-container').classList.remove('hidden');
+            document.getElementById('quiz-stats-bar').classList.remove('hidden');
+            
+            loadQuizQuestion();
         }
 
         function finishQuiz() {
