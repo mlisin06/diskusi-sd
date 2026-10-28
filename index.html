@@ -123,8 +123,8 @@
             <h4 id="quiz-heading">🕵️ Misi Investigasi & Teka-Teki Kritis</h4>
             
             <div class="quiz-stats" id="quiz-stats-bar">
-                <span id="lives-display">❤️ Nyawa Tim: 3 / 3</span>
-                <span id="timer-display" style="color:#d32f2f;">⏱️ Waktu: 30s</span>
+                <span id="lives-display">❤️ Nyawa Tim: 5 / 5</span>
+                <span id="timer-display" style="color:#d32f2f;">⏱️ Waktu: 60s</span>
             </div>
 
             <div class="scenario-box" id="scenario-container">
@@ -235,13 +235,12 @@
 
         let currentUser = "", currentRole = "", currentGroup = "";
         let currentQuestionIndex = 0, score = 0;
-        let lives = 3;
+        let lives = 5; // Diubah menjadi 5 nyawa
         let quizData = [];
         let timer = null;
-        let timeLeft = 30;
+        let timeLeft = 60; // Diubah menjadi 60 detik (1 menit)
         let extractedPdfText = "";
 
-        // Konfigurasi Worker PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
         function playSound(type) {
@@ -315,7 +314,6 @@
             document.getElementById('materi-box').classList.toggle('hidden');
         }
 
-        // --- UPLOAD PDF & EKSTRAK TEKS OTOMATIS ---
         function prosesUploadPDF() {
             const fileInput = document.getElementById('pdf-file-input');
             const jumlahSoal = document.getElementById('jumlah-soal-input').value;
@@ -338,13 +336,11 @@
                         extractedPdfText += pageText + "\n";
                     }
 
-                    // Buat otomatis ringkasan materi untuk siswa & prompt AI
                     db.ref('materi_aktif').set({
                         judul: `Materi Buku: ${file.name}`,
                         isi: extractedPdfText.substring(0, 2500) + "...\n(Dokumen Buku PDF Berhasil Dimuat oleh Guru)"
                     });
 
-                    // Susun Prompt Otomatis untuk AI
                     const promptAI = `Tolong buatkan ${jumlahSoal} tantangan investigasi sekolah dasar berdasarkan teks PDF materi di bawah ini. Campur jenis tantangannya antara soal pilihan ganda HOTS, analisis kasus, serta sisipkan minimal 2 teka-teki logika/teka-teki silang.
 Tingkat kesulitan (level) harus dinamis: "mudah", "sedang", atau "sulit".
 Output WAJIB berupa teks kode JSON murni tanpa ada kalimat pengantar, dengan struktur persis seperti ini:
@@ -378,9 +374,7 @@ ${extractedPdfText.substring(0, 10000)}`;
             alert("📋 Prompt AI berhasil disalin! Buka ChatGPT atau Gemini, lalu Tempel (Paste) di sana.");
         }
 
-        function saveMateri() {
-            // Placeholder cadangan
-        }
+        function saveMateri() {}
 
         function listenMateri() {
             db.ref('materi_aktif').on('value', snapshot => {
@@ -392,7 +386,6 @@ ${extractedPdfText.substring(0, 10000)}`;
             });
         }
 
-        // --- IMPOR & EDIT SOAL ---
         function importJSONSoal() {
             const rawJson = document.getElementById('input-json-soal').value.trim();
             if(!rawJson) return alert("Tempelkan data JSON hasil AI terlebih dahulu!");
@@ -436,7 +429,7 @@ ${extractedPdfText.substring(0, 10000)}`;
 
                 currentQuestionIndex = 0;
                 score = 0;
-                lives = 3;
+                lives = 5; // Reset ke 5 nyawa
                 document.getElementById('quiz-body').classList.remove('hidden');
                 document.getElementById('scenario-container').classList.remove('hidden');
                 document.getElementById('quiz-stats-bar').classList.remove('hidden');
@@ -446,10 +439,9 @@ ${extractedPdfText.substring(0, 10000)}`;
             });
         }
 
-        // --- SISTEM GAME & TIMER ---
         function startTimer() {
             clearInterval(timer);
-            timeLeft = 30;
+            timeLeft = 60; // 60 detik (1 menit)
             document.getElementById('timer-display').innerText = `⏱️ Waktu: ${timeLeft}s`;
 
             timer = setInterval(() => {
@@ -466,18 +458,18 @@ ${extractedPdfText.substring(0, 10000)}`;
             playSound('wrong');
             lives--;
             updateLivesDisplay();
-            if(lives <= 0) return gameOver("Waktu & Nyawa Habis!");
+            if(lives <= 0) return gameOver("Waktu 1 Menit & Nyawa Habis!");
 
             document.getElementById('quiz-answers').innerHTML = "";
             document.getElementById('explanation-box').classList.remove('hidden');
-            document.getElementById('expl-status').innerText = "⏰ Waktu Habis! Nyawa tim berkurang 1.";
+            document.getElementById('expl-status').innerText = "⏰ Waktu 1 Menit Habis! Nyawa tim berkurang 1.";
             document.getElementById('expl-status').style.color = "#c62828";
-            document.getElementById('expl-text').innerText = "💡 Tingkatkan kecepatan koordinasi tim!";
+            document.getElementById('expl-text').innerText = "💡 Perhatikan waktu pada tantangan berikutnya!";
         }
 
         function updateLivesDisplay() {
-            let hearts = "❤️".repeat(lives) + "🖤".repeat(3 - lives);
-            document.getElementById('lives-display').innerText = `Nyawa Tim: ${hearts} (${lives}/3)`;
+            let hearts = "❤️".repeat(lives) + "🖤".repeat(5 - lives);
+            document.getElementById('lives-display').innerText = `Nyawa Tim: ${hearts} (${lives}/5)`;
         }
 
         function loadQuizQuestion() {
@@ -521,7 +513,7 @@ ${extractedPdfText.substring(0, 10000)}`;
                 lives--;
                 playSound('wrong');
                 updateLivesDisplay();
-                if(lives <= 0) return gameOver("Nyawa Tim Habis!");
+                if(lives <= 0) return gameOver("5 Nyawa Tim Habis!");
             }
 
             document.getElementById('quiz-answers').innerHTML = "";
@@ -577,7 +569,6 @@ ${extractedPdfText.substring(0, 10000)}`;
             }
         }
 
-        // --- CHAT & REKAP ---
         function sendEmoji(text) {
             db.ref(`chats/${currentGroup}`).push({ sender: currentUser, text: text, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
         }
