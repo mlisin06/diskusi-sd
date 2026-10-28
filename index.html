@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ruang Diskusi Detektif Cilik SD - Studio AI PDF</title>
+    <title>Ruang Diskusi Detektif Cilik SD - Full PDF & Voting</title>
     <!-- PDF.js untuk membaca file PDF langsung di browser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
@@ -24,17 +24,22 @@
         .emoji-btn { width: auto; padding: 4px 8px; font-size: 16px; background: #e0f2f1; border: 1px solid #80cbd4; border-radius: 10px; cursor: pointer; margin: 0; }
         .role-badge { background: #e91e63; color: white; padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 5px; }
 
-        /* Game / Quiz Non-Pilihan Ganda */
+        /* Fitur Poling / Voting Tim */
+        .poll-box { background: #ede7f6; border: 2px solid #7e57c2; padding: 12px; border-radius: 10px; margin-bottom: 12px; text-align: left; font-size: 13px; }
+
+        /* Permainan Kartu Misteri */
+        .card-game-container { background: #fffde7; border: 3px dashed #fbc02d; padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: center; }
+        .investigation-card { background: white; border: 2px solid #ffa000; border-radius: 10px; padding: 15px; margin: 10px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+        /* Game / Quiz */
         .quiz-option { display: block; background: #e3f2fd; padding: 10px; margin: 5px 0; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; color: #0d47a1; border: 1px solid #90caf9; width:100%; }
         .quiz-option:hover { background: #bbdefb; }
         .quiz-stats { display: flex; justify-content: space-between; background: #f1f8e9; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; margin-bottom: 10px; }
         .scenario-box { background: #e8eaf6; border: 2px dashed #3f51b5; padding: 12px; border-radius: 10px; margin-bottom: 12px; font-size: 13px; color: #1a237e; text-align: left; }
 
-        /* Drag / Sort List untuk Misi Urutan */
         .sortable-list { list-style-type: none; padding: 0; margin: 10px 0; }
-        .sortable-item { background: #fff3e0; border: 1px solid #ffe0b2; padding: 8px 12px; border-radius: 8px; margin-bottom: 5px; cursor: grab; font-size: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .sortable-item { background: #fff3e0; border: 1px solid #ffe0b2; padding: 8px 12px; border-radius: 8px; margin-bottom: 5px; font-size: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
 
-        /* Tabel & List */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
         th, td { border: 1px solid #ce93d8; padding: 8px; text-align: center; }
         th { background-color: #ba68c8; color: white; }
@@ -52,7 +57,7 @@
 
     <!-- HALAMAN LOGIN -->
     <div id="login-card" class="card">
-        <h2>🕵️ Detektif Cilik SD - Studio AI PDF</h2>
+        <h2>🕵️ Detektif Cilik SD - Full PDF & Voting</h2>
         <label>Nama Siswa / Guru:</label>
         <input type="text" id="username" placeholder="Masukkan namamu...">
         
@@ -85,11 +90,22 @@
             <button onclick="location.reload()" style="width:auto; padding:5px 10px; background:#e53935;">Keluar</button>
         </div>
 
-        <h3 id="materi-title">🔍 Dokumen Kasus & Buku Materi</h3>
+        <h3 id="materi-title">🔍 Dokumen Kasus & Buku Materi PDF (Full Teks)</h3>
 
-        <button onclick="toggleMateri()" style="background-color: #00bcd4;">📖 Baca Buku / Dokumen Materi</button>
-        <div id="materi-box" class="card hidden" style="background:#fffde7; font-size:13px; text-align:left; white-space: pre-line;">
-            <div id="materi-content">Sedang memuat materi...</div>
+        <!-- Tombol Buka Materi PDF Utuh -->
+        <button onclick="toggleMateri()" style="background-color: #00bcd4;">📖 Baca Full Isi Buku PDF dari Guru</button>
+        <div id="materi-box" class="card hidden" style="background:#fffde7; font-size:13px; text-align:left; white-space: pre-line; max-height: 350px; overflow-y: auto;">
+            <div id="materi-content">Sedang memuat materi lengkap...</div>
+        </div>
+
+        <!-- Kartu Misteri Investigasi -->
+        <div class="card-game-container">
+            <h4 style="color:#f57f17; margin:0 0 5px;">🃏 Kartu Misteri Investigasi Tim</h4>
+            <button onclick="ambilKartuMisteri()" style="background:#ffa000; width:auto; padding:8px 20px;">🎴 Ambil Kartu Misteri Baru</button>
+            <div id="assigned-card-box" class="hidden investigation-card">
+                <b id="card-title-display" style="color:#e65100;">-</b>
+                <p id="card-desc-display" style="font-size:12px; margin:5px 0 0; color:#333;"></p>
+            </div>
         </div>
 
         <!-- Leaderboard Kelompok -->
@@ -108,7 +124,18 @@
             </table>
         </div>
 
-        <!-- Ruang Chat Debat & Pembagian Peran -->
+        <!-- FITUR BARU: POLING / VOTING KELOMPOK -->
+        <div class="poll-box">
+            <h4 style="color:#512da8; margin:0 0 5px;">📊 Poling Diskusi Mufakat Tim</h4>
+            <p style="font-size:11px; margin:0 0 5px;">Apakah kelompokmu sepakat dengan jawaban tantangan saat ini?</p>
+            <div style="display:flex; gap:10px;">
+                <button onclick="kirimVoting('✅ SEPAKAT (Yakin Benar)')" style="background:#4caf50; padding:6px; font-size:12px; margin:0;">👍 Sepakat (Yakin)</button>
+                <button onclick="kirimVoting('❌ BELUM SEPAKAT (Perlu Diskusi Lagi)')" style="background:#e53935; padding:6px; font-size:12px; margin:0;">👎 Belum Sepakat</button>
+            </div>
+            <div id="poll-result-display" style="font-size:11px; margin-top:8px; font-weight:bold; color:#4527a0;">Belum ada voting kelompok.</div>
+        </div>
+
+        <!-- Ruang Chat Debat -->
         <h4>💬 Ruang Debat & Konsensus <span id="group-title"></span></h4>
         <div id="user-assigned-role" class="role-badge">Tugas Peran: Mengatur Diskusi Kelompok</div>
         <div id="chat-box"></div>
@@ -124,7 +151,7 @@
             <button onclick="sendChat()" style="width:30%;">Kirim</button>
         </div>
 
-        <!-- Game / Misi Investigasi Non-Pilihan Ganda -->
+        <!-- Game / Misi Investigasi -->
         <div id="quiz-section" class="card" style="background:#e8f5e9; margin-top:15px;">
             <h4 id="quiz-heading">🕵️ Misi Investigasi & Kolaborasi Tim</h4>
             
@@ -140,8 +167,6 @@
 
             <div id="quiz-body">
                 <p id="quiz-question" style="font-weight:bold; font-size:14px;"></p>
-                
-                <!-- CONTAINER DINAMIS UNTUK BERBAGAI JENIS MISI -->
                 <div id="interactive-mission-container"></div>
             </div>
 
@@ -165,41 +190,37 @@
             </div>
         </div>
 
-        <!-- PANEL GURU: UPLOAD PDF & GENERATOR OTOMATIS -->
+        <!-- PANEL GURU -->
         <div id="guru-panel" class="card hidden" style="background:#f3e5f5; margin-top:15px;">
             <h4 style="color:#7b1fa2;">👑 Studio AI: Upload PDF Buku Materi & Generator Tantangan</h4>
             
             <div class="form-soal" style="background:#e8eaf6; border-color:#c5cae9;">
-                <b>📂 1. Upload File PDF Buku Materi Pembelajaran:</b>
+                <b>📂 1. Upload File PDF Buku Materi Pembelajaran (Full Text):</b>
                 <input type="file" id="pdf-file-input" accept="application/pdf" style="background:white;">
                 
-                <label style="margin-top:10px; display:block;">⚙️ Jumlah Tantangan (Soal & Teka-Teki) yang Diminta:</label>
+                <label style="margin-top:10px; display:block;">⚙️ Jumlah Tantangan yang Diminta:</label>
                 <select id="jumlah-soal-input">
-                    <option value="5">5 Tantangan (Uji Coba Cepat)</option>
-                    <option value="15" selected>15 Tantangan (Standar Misi)</option>
-                    <option value="30">30 Tantangan (Misi Penuh)</option>
+                    <option value="5">5 Tantangan</option>
+                    <option value="15" selected>15 Tantangan</option>
+                    <option value="30">30 Tantangan</option>
                 </select>
 
-                <button onclick="prosesUploadPDF()" style="background:#3f51b5; margin-top:10px;">✨ Ekstrak PDF & Buat Prompt Generator AI</button>
+                <button onclick="prosesUploadPDF()" style="background:#3f51b5; margin-top:10px;">✨ Ekstrak Full PDF & Buat Prompt AI</button>
             </div>
 
-            <!-- Hasil Teks PDF & Prompt Otomatis -->
             <div class="form-soal" id="ai-prompt-box" class="hidden" style="background:#fff9c4; border-color:#fff176;">
                 <b>🤖 2. Salin Teks ke AI (Gemini / ChatGPT):</b>
-                <p style="font-size:11px; color:#f57f17; margin:3px 0 8px;">Teks PDF berhasil dibaca! Klik tombol di bawah untuk menyalin instruksi otomatis, lalu paste ke Gemini/ChatGPT untuk menghasilkan JSON kuis multi-tipe.</p>
-                <textarea id="output-prompt-ai" placeholder="Prompt AI akan muncul di sini setelah PDF di-upload..." style="min-height:100px; font-size:11px; font-family:monospace;"></textarea>
+                <textarea id="output-prompt-ai" placeholder="Prompt AI akan muncul di sini..." style="min-height:100px; font-size:11px; font-family:monospace;"></textarea>
                 <button onclick="salinPromptAI()" style="background:#fbc02d; color:#5d4037;">📋 Salin Prompt AI</button>
             </div>
 
-            <!-- Form Tempel JSON Hasil AI -->
             <div class="form-soal">
                 <b>📥 3. Tempel (Paste) Format JSON Hasil AI ke Sini:</b>
-                <textarea id="input-json-soal" placeholder='Tempel teks format JSON dari AI...' style="min-height:100px; font-family:monospace; font-size:11px;"></textarea>
+                <textarea id="input-json-soal" placeholder='Tempel teks format JSON...' style="min-height:100px; font-family:monospace; font-size:11px;"></textarea>
                 <button onclick="importJSONSoal()" style="background:#2e7d32;">🚀 Terbitkan Tantangan ke Siswa</button>
             </div>
 
-            <!-- Tabel Daftar & Edit Soal Aktif -->
-            <h4 style="color:#7b1fa2; margin-top:20px;">📋 Daftar Soal & Teka-Teki Aktif di Sistem</h4>
+            <h4 style="color:#7b1fa2; margin-top:20px;">📋 Daftar Soal Aktif</h4>
             <div id="edit-soal-list" style="max-height:200px; overflow-y:auto; background:white; padding:8px; border-radius:8px; border:1px solid #ce93d8;">
                 <p style="font-size:12px; text-align:center; color:#777;">Belum ada soal dimuat.</p>
             </div>
@@ -248,9 +269,55 @@
         let timer = null;
         let timeLeft = 60;
         let extractedPdfText = "";
-        let currentSortedOrder = [];
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        const deckKartuMisteri = [
+            { title: "🎴 Kartu Fakta / Hoaks", desc: "Temukan 1 pernyataan dari buku materi yang keliru, lalu uji di chat!" },
+            { title: "🎴 Kartu Sebab-Akibat", desc: "Buat rantai logika: Sebutkan kejadian dari materi dan akibatnya!" },
+            { title: "🎴 Kartu Tantangan Istilah", desc: "Tantang kelompokmu mendefinisikan istilah ilmiah tersulit di bab ini!" }
+        ];
+
+        function ambilKartuMisteri() {
+            const randomCard = deckKartuMisteri[Math.floor(Math.random() * deckKartuMisteri.length)];
+            document.getElementById('assigned-card-box').classList.remove('hidden');
+            document.getElementById('card-title-display').innerText = randomCard.title;
+            document.getElementById('card-desc-display').innerText = randomCard.desc;
+
+            db.ref(`chats/${currentGroup}`).push({
+                sender: "🤖 Sistem Kartu",
+                text: `Mendapatkan kartu: ${randomCard.title} - "${randomCard.desc}"`,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+        }
+
+        function kirimVoting(statusPilihan) {
+            db.ref(`polls/${currentGroup}`).push({
+                nama: currentUser,
+                pilihan: statusPilihan,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+        }
+
+        function listenPolls() {
+            db.ref(`polls/${currentGroup}`).on('value', snapshot => {
+                const pollDisplay = document.getElementById('poll-result-display');
+                if(!snapshot.exists()) {
+                    pollDisplay.innerText = "Belum ada voting suara kelompok.";
+                    return;
+                }
+                const votes = {};
+                snapshot.forEach(child => {
+                    const d = child.val();
+                    votes[d.pilihan] = (votes[d.pilihan] || 0) + 1;
+                });
+                let resultStr = "Hasil Poling Tim: ";
+                for(let key in votes) {
+                    resultStr += `[${key}: ${votes[key]} suara] `;
+                }
+                pollDisplay.innerText = resultStr;
+            });
+        }
 
         function playSound(type) {
             try {
@@ -290,13 +357,12 @@
 
         function assignRandomRole() {
             const roles = [
-                "🕵️ Ketua Analis: Mengarahkan Jalur Diskusi",
-                "🔍 Pencari Fakta PDF: Menyesuaikan Data Buku",
-                "⚖️ Juru Mufakat: Memastikan Keputusan Tim",
-                "📝 Pencatat Bukti: Memverifikasi Kata Kunci"
+                "🕵️ Ketua Analis: Memimpin Diskusi",
+                "🔍 Pencari Fakta: Mengecek Buku PDF",
+                "⚖️ Juru Mufakat: Mengambil Keputusan",
+                "📝 Pencatat Argumen: Merangkum Pendapat"
             ];
-            const randomRole = roles[Math.floor(Math.random() * roles.length)];
-            document.getElementById('user-assigned-role').innerText = `Peran Kamu: ${randomRole}`;
+            document.getElementById('user-assigned-role').innerText = `Peran Kamu: ${roles[Math.floor(Math.random() * roles.length)]}`;
         }
 
         function login() {
@@ -304,7 +370,7 @@
             currentRole = document.getElementById('role').value;
             currentGroup = document.getElementById('group').value;
 
-            if(!currentUser) return alert("Silakan masukkan nama terlebih dahulu!");
+            if(!currentUser) return alert("Masukkan nama terlebih dahulu!");
 
             if(currentRole === 'guru') {
                 const inputPin = document.getElementById('guru-pin').value;
@@ -330,6 +396,7 @@
             listenMateri();
             listenQuizQuestions();
             listenLeaderboard();
+            listenPolls();
         }
 
         function toggleMateri() {
@@ -340,7 +407,7 @@
             const fileInput = document.getElementById('pdf-file-input');
             const jumlahSoal = document.getElementById('jumlah-soal-input').value;
 
-            if(fileInput.files.length === 0) return alert("Pilih file PDF buku materi terlebih dahulu!");
+            if(fileInput.files.length === 0) return alert("Pilih file PDF terlebih dahulu!");
 
             const file = fileInput.files[0];
             const reader = new FileReader();
@@ -355,21 +422,17 @@
                         const page = await pdf.getPage(i);
                         const textContent = await page.getTextContent();
                         const pageText = textContent.items.map(item => item.str).join(' ');
-                        extractedPdfText += pageText + "\n";
+                        extractedPdfText += `--- HALAMAN ${i} ---\n` + pageText + "\n\n";
                     }
 
+                    // SIMPAN FULL TEKS PDF TANPA PEMOTONGAN KE FIREBASE
                     db.ref('materi_aktif').set({
-                        judul: `Materi Buku: ${file.name}`,
-                        isi: extractedPdfText.substring(0, 2500) + "...\n(Dokumen Buku PDF Berhasil Dimuat oleh Guru)"
+                        judul: `Buku Materi: ${file.name}`,
+                        isi: extractedPdfText
                     });
 
-                    const promptAI = `Tolong buatkan ${jumlahSoal} tantangan investigasi sekolah dasar berdasarkan teks PDF materi di bawah ini.
-VARIASIKAN JENIS MISINYA DENGAN 3 MODUL BERIKUT:
-1. "pg" -> Pilihan Ganda HOTS Biasa.
-2. "text_input" -> Isian Kata Kunci (Siswa harus mengetikkan istilah penting).
-3. "ordering" -> Menyusun Urutan Kronologi (Daftar peristiwa acak yang harus diurutkan 1,2,3,4).
-
-Output WAJIB berupa teks kode JSON murni tanpa kalimat pengantar, dengan struktur persis seperti ini:
+                    const promptAI = `Tolong buatkan ${jumlahSoal} tantangan investigasi sekolah dasar berdasarkan FULL TEKS PDF materi di bawah ini. Variasikan jenis misinya: "pg", "text_input", dan "ordering".
+Output WAJIB berupa teks kode JSON murni tanpa kalimat pengantar:
 [
   {
     "type": "pg",
@@ -381,26 +444,27 @@ Output WAJIB berupa teks kode JSON murni tanpa kalimat pengantar, dengan struktu
   },
   {
     "type": "text_input",
-    "scenario": "Laporan tim dengan kata kunci hilang...",
-    "q": "Ketik kata kunci istilah ilmiah yang tepat:",
+    "scenario": "Laporan tim...",
+    "q": "Ketik kata kunci istilah ilmiah:",
     "correct_keyword": "klorofil",
     "explanation": "Pembahasan..."
   },
   {
     "type": "ordering",
-    "scenario": "Urutkan tahapan proses berikut secara benar...",
-    "q": "Atur nomor urutan peristiwa dari awal hingga akhir:",
-    "items": ["Peristiwa A", "Peristiwa B", "Peristiwa C", "Peristiwa D"],
+    "scenario": "Urutkan tahapan proses...",
+    "q": "Atur nomor urutan peristiwa:",
+    "items": ["Tahap 1", "Tahap 2", "Tahap 3", "Tahap 4"],
     "correct_order": [0, 1, 2, 3],
-    "explanation": "Pembahasan urutan..."
+    "explanation": "Pembahasan..."
   }
 ]
 
-TEKS PDF MATERI:
-${extractedPdfText.substring(0, 10000)}`;
+FULL TEKS PDF MATERI:
+${extractedPdfText.substring(0, 15000)}`;
 
                     document.getElementById('output-prompt-ai').value = promptAI;
-                    alert("✅ File PDF berhasil dibaca! Salin prompt di bawah untuk meminta AI membuat 3 Variasi Misi.");
+                    document.getElementById('ai-prompt-box').classList.remove('hidden');
+                    alert("✅ Full Teks PDF Berhasil Diekstrak dan Dimuat untuk Siswa!");
                 } catch(error) {
                     alert("Gagal membaca file PDF.");
                 }
@@ -412,7 +476,7 @@ ${extractedPdfText.substring(0, 10000)}`;
             const textarea = document.getElementById('output-prompt-ai');
             textarea.select();
             document.execCommand('copy');
-            alert("📋 Prompt AI berhasil disalin! Paste ke ChatGPT atau Gemini.");
+            alert("📋 Prompt AI berhasil disalin!");
         }
 
         function listenMateri() {
@@ -420,23 +484,20 @@ ${extractedPdfText.substring(0, 10000)}`;
                 if(snapshot.exists()) {
                     const data = snapshot.val();
                     document.getElementById('materi-title').innerText = `🔍 ${data.judul}`;
-                    document.getElementById('materi-content').innerText = data.isi;
+                    document.getElementById('materi-content').innerText = data.isi; // Tampil full teks
                 }
             });
         }
 
         function importJSONSoal() {
             const rawJson = document.getElementById('input-json-soal').value.trim();
-            if(!rawJson) return alert("Tempelkan data JSON hasil AI terlebih dahulu!");
+            if(!rawJson) return alert("Tempelkan data JSON hasil AI!");
 
             try {
                 const cleanJson = rawJson.replace(/```json/g, '').replace(/```/g, '').trim();
                 const parsedData = JSON.parse(cleanJson);
-
-                if(!Array.isArray(parsedData)) return alert("Format JSON harus berupa Array [...]!");
-
                 db.ref('questions').set(parsedData).then(() => {
-                    alert(`Berhasil menerbitkan ${parsedData.length} variasi tantangan ke siswa!`);
+                    alert(`Berhasil menerbitkan ${parsedData.length} tantangan!`);
                     document.getElementById('input-json-soal').value = '';
                 });
             } catch(e) {
@@ -458,9 +519,8 @@ ${extractedPdfText.substring(0, 10000)}`;
                     const val = snapshot.val();
                     const list = Array.isArray(val) ? val : Object.values(val);
                     quizData = list;
-
                     list.forEach((item, idx) => {
-                        editList.innerHTML += `<div style="font-size:11px; border-bottom:1px solid #ddd; padding:4px;"><b>#${idx+1} [Misi: ${item.type || 'pg'}]</b>: ${item.q}</div>`;
+                        editList.innerHTML += `<div style="font-size:11px; border-bottom:1px solid #ddd; padding:4px;"><b>#${idx+1} [${item.type || 'pg'}]</b>: ${item.q}</div>`;
                     });
                 } else {
                     editList.innerHTML = '<p style="font-size:12px; text-align:center; color:#777;">Belum ada tantangan.</p>';
@@ -497,13 +557,13 @@ ${extractedPdfText.substring(0, 10000)}`;
             playSound('wrong');
             lives--;
             updateLivesDisplay();
-            if(lives <= 0) return gameOver("Waktu 1 Menit & Nyawa Habis!");
+            if(lives <= 0) return gameOver("Waktu & Nyawa Habis!");
 
             document.getElementById('interactive-mission-container').innerHTML = "";
             document.getElementById('explanation-box').classList.remove('hidden');
-            document.getElementById('expl-status').innerText = "⏰ Waktu 1 Menit Habis! Nyawa tim berkurang 1.";
+            document.getElementById('expl-status').innerText = "⏰ Waktu Habis! Nyawa tim berkurang 1.";
             document.getElementById('expl-status').style.color = "#c62828";
-            document.getElementById('expl-text').innerText = "💡 Koordinasikan pembagian tugas tim di chat!";
+            document.getElementById('expl-text').innerText = "💡 Periksa kembali teks buku PDF di atas!";
         }
 
         function updateLivesDisplay() {
@@ -511,10 +571,9 @@ ${extractedPdfText.substring(0, 10000)}`;
             document.getElementById('lives-display').innerText = `Nyawa Tim: ${hearts} (${lives}/5)`;
         }
 
-        // --- RENDER MODUL MISI INTERAKTIF DINAMIS ---
         function loadQuizQuestion() {
             if (quizData.length === 0) {
-                document.getElementById('scenario-text').innerText = "Belum ada dokumen / tantangan diterbitkan Guru.";
+                document.getElementById('scenario-text').innerText = "Belum ada tantangan diterbitkan Guru.";
                 document.getElementById('quiz-question').innerText = "";
                 document.getElementById('interactive-mission-container').innerHTML = "";
                 document.getElementById('quiz-stats-bar').classList.add('hidden');
@@ -525,11 +584,11 @@ ${extractedPdfText.substring(0, 10000)}`;
             if (currentQuestionIndex >= quizData.length) return finishQuiz();
 
             const q = quizData[currentQuestionIndex];
-            document.getElementById('scenario-text').innerText = q.scenario || "Pecahkan tantangan kolaboratif ini bersama tim.";
+            document.getElementById('scenario-text').innerText = q.scenario || "Pecahkan tantangan ini bersama tim.";
             
             let labelType = "🕵️ Pilihan Ganda HOTS";
-            if(q.type === 'text_input') labelType = "✍️ Misi Ketik Kata Kunci Istilah";
-            else if(q.type === 'ordering') labelType = "🔄 Misi Menyusun Urutan Kronologi";
+            if(q.type === 'text_input') labelType = "✍️ Misi Ketik Kata Kunci";
+            else if(q.type === 'ordering') labelType = "🔄 Misi Urutan Kronologi";
 
             document.getElementById('quiz-heading').innerText = `Tantangan (${currentQuestionIndex + 1}/${quizData.length}): ${labelType}`;
             document.getElementById('quiz-question').innerText = q.q;
@@ -540,22 +599,16 @@ ${extractedPdfText.substring(0, 10000)}`;
             const container = document.getElementById('interactive-mission-container');
             container.innerHTML = '';
 
-            // MODUL 1: PILIHAN GANDA
             if(!q.type || q.type === 'pg') {
                 q.options.forEach((opt, idx) => {
                     container.innerHTML += `<button class="quiz-option" onclick="checkAnswerPG(${idx})">${opt}</button>`;
                 });
-            } 
-            // MODUL 2: KETIK KATA KUNCI (TEXT INPUT)
-            else if(q.type === 'text_input') {
+            } else if(q.type === 'text_input') {
                 container.innerHTML = `
-                    <input type="text" id="user-keyword-input" placeholder="Tulis istilah kata kunci di sini..." style="margin-top:10px;">
-                    <button onclick="checkAnswerTextInput()" style="background:#2e7d32;">🚀 Verifikasi Jawaban Tim</button>
+                    <input type="text" id="user-keyword-input" placeholder="Tulis istilah kata kunci..." style="margin-top:10px;">
+                    <button onclick="checkAnswerTextInput()" style="background:#2e7d32;">🚀 Verifikasi Jawaban</button>
                 `;
-            }
-            // MODUL 3: MENYUSUN URUTAN (ORDERING)
-            else if(q.type === 'ordering') {
-                currentSortedOrder = [...q.items.keys()]; // simpan index urutan saat ini
+            } else if(q.type === 'ordering') {
                 let html = '<div class="sortable-list">';
                 q.items.forEach((item, idx) => {
                     html += `
@@ -567,7 +620,7 @@ ${extractedPdfText.substring(0, 10000)}`;
                             </div>
                         </div>`;
                 });
-                html += '</div><button onclick="checkAnswerOrdering()" style="background:#0288d1; margin-top:5px;">🚀 Kunci Urutan Tim</button>';
+                html += '</div><button onclick="checkAnswerOrdering()" style="background:#0288d1; margin-top:5px;">🚀 Kunci Urutan</button>';
                 container.innerHTML = html;
             }
         }
@@ -576,8 +629,6 @@ ${extractedPdfText.substring(0, 10000)}`;
             const q = quizData[currentQuestionIndex];
             const newIndex = index + direction;
             if (newIndex < 0 || newIndex >= q.items.length) return;
-            
-            // Swap elemen
             const temp = q.items[index];
             q.items[index] = q.items[newIndex];
             q.items[newIndex] = temp;
@@ -587,8 +638,7 @@ ${extractedPdfText.substring(0, 10000)}`;
         function checkAnswerPG(selectedIdx) {
             clearInterval(timer);
             const q = quizData[currentQuestionIndex];
-            const isCorrect = (selectedIdx === q.answer);
-            evaluateAnswerResult(isCorrect, q.options[q.answer]);
+            evaluateAnswerResult(selectedIdx === q.answer, q.options[q.answer]);
         }
 
         function checkAnswerTextInput() {
@@ -596,15 +646,14 @@ ${extractedPdfText.substring(0, 10000)}`;
             const q = quizData[currentQuestionIndex];
             const userInput = document.getElementById('user-keyword-input').value.trim().toLowerCase();
             const correctKeyword = (q.correct_keyword || '').trim().toLowerCase();
-            const isCorrect = (userInput === correctKeyword);
-            evaluateAnswerResult(isCorrect, q.correct_keyword);
+            evaluateAnswerResult(userInput === correctKeyword, q.correct_keyword);
         }
 
         function checkAnswerOrdering() {
             clearInterval(timer);
             const q = quizData[currentQuestionIndex];
             const isCorrect = JSON.stringify(q.items) === JSON.stringify(q.correct_order_text || q.items);
-            evaluateAnswerResult(isCorrect, "Sesuai Urutan Logika Buku");
+            evaluateAnswerResult(isCorrect, "Sesuai Urutan Logika");
         }
 
         function evaluateAnswerResult(isCorrect, correctInfo) {
@@ -616,21 +665,21 @@ ${extractedPdfText.substring(0, 10000)}`;
                 lives--;
                 playSound('wrong');
                 updateLivesDisplay();
-                if(lives <= 0) return gameOver("5 Nyawa Tim Habis!");
+                if(lives <= 0) return gameOver("Nyawa Tim Habis!");
             }
 
             document.getElementById('interactive-mission-container').innerHTML = "";
             document.getElementById('explanation-box').classList.remove('hidden');
 
             if(isCorrect) {
-                document.getElementById('expl-status').innerText = "✅ Analisis Tim Tepat & Benar!";
+                document.getElementById('expl-status').innerText = "✅ Jawaban Benar!";
                 document.getElementById('expl-status').style.color = "#2e7d32";
             } else {
-                document.getElementById('expl-status').innerText = `❌ Kurang Tepat. Jawaban Kunci: ${correctInfo}`;
+                document.getElementById('expl-status').innerText = `❌ Kunci: ${correctInfo}`;
                 document.getElementById('expl-status').style.color = "#c62828";
             }
             const q = quizData[currentQuestionIndex];
-            document.getElementById('expl-text').innerText = q.explanation ? `💡 Pembahasan Logika: ${q.explanation}` : "💡 Diskusikan dengan kelompok!";
+            document.getElementById('expl-text').innerText = q.explanation ? `💡 Pembahasan: ${q.explanation}` : "💡 Cek kembali buku PDF!";
         }
 
         function nextQuestion() {
